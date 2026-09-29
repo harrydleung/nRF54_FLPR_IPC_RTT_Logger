@@ -1,0 +1,10 @@
+identifier: debug_flpr_ipc/nrf54l15/cpuflpr
+name: debug_flpr_ipc
+vendor: HarryL
+arch: riscv
+toolchain:
+  - zephyr
+sysbuild: true
+ram: 96
+flash: 96
+supported: []

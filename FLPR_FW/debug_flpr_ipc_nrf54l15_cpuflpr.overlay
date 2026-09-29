@@ -1,0 +1,39 @@
+/ {
+	soc {
+		reserved-memory {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			cpuapp_cpuflpr_ipc_shm: memory@20027000 {
+				reg = <0x20027000 DT_SIZE_K(2)>;
+			};
+
+			cpuflpr_cpuapp_ipc_shm: memory@20027800 {
+				reg = <0x20027800 DT_SIZE_K(2)>;
+			};
+		};
+
+		ipc {
+			ipc0: ipc0 {
+				compatible = "zephyr,ipc-icbmsg";
+				dcache-alignment = <32>;
+				tx-region = <&cpuflpr_cpuapp_ipc_shm>;
+				rx-region = <&cpuapp_cpuflpr_ipc_shm>;
+				tx-blocks = <4>;
+				rx-blocks = <4>;
+				mboxes = <&cpuflpr_vevif_rx 21>, <&cpuflpr_vevif_tx 20>;
+				mbox-names = "rx", "tx";
+				unbound = "detect";
+				status = "okay";
+			};
+		};
+	};
+};
+
+&cpuflpr_vevif_rx {
+	status = "okay";
+};
+
+&cpuflpr_vevif_tx {
+	status = "okay";
+};

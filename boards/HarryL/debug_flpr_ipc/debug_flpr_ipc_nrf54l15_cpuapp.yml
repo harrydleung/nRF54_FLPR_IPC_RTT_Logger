@@ -1,0 +1,10 @@
+identifier: debug_flpr_ipc/nrf54l15/cpuapp
+name: debug_flpr_ipc
+vendor: HarryL
+arch: arm
+toolchain:
+  - zephyr
+sysbuild: true
+ram: 188
+flash: 1428
+supported: []

@@ -1,0 +1,64 @@
+/dts-v1/;
+#include <nordic/nrf54l15_cpuapp.dtsi>
+#include "debug_flpr_ipc_common.dtsi"
+
+/ {
+	model = "debug_flpr_ipc";
+	compatible = "HarryL,debug-flpr-ipc-cpuapp";
+
+	chosen {
+		zephyr,code-partition = &slot0_partition;
+		zephyr,sram = &cpuapp_sram;
+		zephyr,flash = &cpuapp_rram;
+		zephyr,flash-controller = &rram_controller;
+	};
+
+	clocks {
+		lfxo: lfxo {
+			status = "disabled";
+		};
+	};
+
+	aliases {
+		rtt-custom-section = &rtt_ram_region;
+	};
+};
+
+&cpuapp_sram {
+	reg = <0x20000000 0x26000>;
+	ranges = <0x0 0x20000000 0x26000>;
+
+	rtt_ram_region: memory@25000 {
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x25000 DT_SIZE_K(4)>;
+		zephyr,memory-region = "segger_rtt_data";
+	};
+};
+
+&cpuapp_rram {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		slot0_partition: partition@0 {
+			label = "image-0";
+			reg = <0 DT_SIZE_K(664)>;
+		};
+	};
+};
+
+&grtc {
+	owned-channels = <0 1 2 3 4 5 6 7 8 9 10 11>;
+	/* Channels 7-11 reserved for Zero Latency IRQs, 3-4 for FLPR */
+	child-owned-channels = <3 4 7 8 9 10 11>;
+	status = "okay";
+};
+
+&uicr {
+	nfct-pins-as-gpios;
+};
+
+&cpuflpr_vpr {
+	status = "okay";
+};
