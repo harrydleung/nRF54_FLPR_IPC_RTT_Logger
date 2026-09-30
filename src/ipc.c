@@ -16,6 +16,7 @@ static void dbgmsg_unbound(void *priv)
 }
 static void dbgmsg_recv(const void *data, size_t len, void *priv)
 {
+    /* IPC text need not be NUL-terminated; bound output by the received length. */
     printk("FLPR DBG:%.*s", (int)len, (const char *)data);
 }
 static void ep_error(const char *err, void *priv)
@@ -30,6 +31,7 @@ static struct ipc_ept_cfg dbgmsg_ep_cfg = {
         .received = dbgmsg_recv,
         .error = ep_error,
     },
+    /* This name must match the endpoint registered by FLPR. */
     .name = "dbgmsg_ep",
 };
 
@@ -42,10 +44,12 @@ void dbgmsg_ipc_init(void)
 
     dbgmsg_ipc_dev = DEVICE_DT_GET(DT_NODELABEL(ipc0));
     ret = ipc_service_open_instance(dbgmsg_ipc_dev);
+    /* An already-open IPC instance can still be used to register this endpoint. */
     if ((ret < 0) && (ret != -EALREADY))
     {
         LOG_ERR("ipc_service_open_instance() failure");
     }
+    /* Registration starts the handshake; dbgmsg_bound() reports readiness. */
     ret = ipc_service_register_endpoint(dbgmsg_ipc_dev, &dbgmsg_ep, &dbgmsg_ep_cfg);
     if (ret < 0)
     {

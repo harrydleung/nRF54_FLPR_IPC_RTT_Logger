@@ -15,6 +15,7 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 int main(void)
 {
+    /* Register the receiver that prints FLPR logs through CPUAPP's RTT console. */
     dbgmsg_ipc_init();
     while (1)
     {
