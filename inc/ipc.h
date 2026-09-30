@@ -2,6 +2,7 @@
 #define __ipc_h
 #include <zephyr/types.h>
 
+/* Register CPUAPP's debug-log receiver; initialization errors are logged. */
 void dbgmsg_ipc_init(void);
 void magdata_ipc_init(void);
 int magdata_ipc_send(const void *data, size_t len);

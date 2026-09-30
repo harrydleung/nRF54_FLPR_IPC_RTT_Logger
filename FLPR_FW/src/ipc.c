@@ -11,6 +11,7 @@ LOG_MODULE_REGISTER(flpr_ipc, CONFIG_LOG_DEFAULT_LEVEL);
 
 // Debug message IPC
 
+/* Use the semaphore count as a connection flag: 0 = unbound, 1 = bound. */
 K_SEM_DEFINE(dbgmsg_bound_sem, 0, 1);
 
 static void dbgmsg_bound(void *priv)
@@ -20,6 +21,7 @@ static void dbgmsg_bound(void *priv)
 }
 static void dbgmsg_unbound(void *priv)
 {
+    /* Consume the bound token so subsequent log chunks are no longer sent. */
     k_sem_take(&dbgmsg_bound_sem, K_FOREVER);
     LOG_INF("dbgmsg ep unbounded");
 }
@@ -29,6 +31,7 @@ static void ep_error(const char *err, void *priv)
 }
 uint32_t ipc_get_dbgmsg_bounded(void)
 {
+    /* Inspect the flag without consuming the token used by the send guard. */
     return k_sem_count_get(&dbgmsg_bound_sem);
 }
 
@@ -39,6 +42,7 @@ static struct ipc_ept_cfg dbgmsg_ep_cfg = {
         //.received = dbgmsg_recv,
         .error = ep_error,
     },
+    /* This name must match the endpoint registered by CPUAPP. */
     .name = "dbgmsg_ep",
 };
 
@@ -52,6 +56,7 @@ void dbgmsg_ipc_init(void)
     int ret;
 
     ret = ipc_service_open_instance(dbgmsg_ipc_dev);
+    /* An already-open IPC instance can still be used to register this endpoint. */
     if ((ret < 0) && (ret != -EALREADY))
     {
         LOG_ERR("ipc_service_open_instance() failure");
@@ -65,6 +70,7 @@ void dbgmsg_ipc_init(void)
 
 void dbgmsg_ipc_send(const void *data, size_t len)
 {
+    /* Discard chunks while unbound; this wrapper does not queue or retry logs. */
     if (k_sem_count_get(&dbgmsg_bound_sem) > 0)
     {
         ipc_service_send(&dbgmsg_ep, data, len);

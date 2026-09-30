@@ -11,6 +11,7 @@ LOG_MODULE_REGISTER(Main, LOG_LEVEL_INF);
 int main(void)
 {
     ipc_logger_init();
+    /* Wait for CPUAPP before emitting the application's first periodic log. */
     while (!ipc_get_dbgmsg_bounded())
     {
         k_sleep(K_MSEC(10));
